@@ -2,26 +2,27 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function AboutPage() {
-    const arr = [1, 4, 5, [6, [7, 8]], 9];
-const res: number[] = [];
+//     const arr = [1, 4, 5, [6, [7, 8]], 9];
+// const res: number[] = [];
 
-const recfun = (arr: any[]): void => {
-  for (let i = 0; i < arr.length; i++) {
-    if (typeof arr[i] === "number") {
-      res.push(arr[i]);
-    } else {
-      recfun(arr[i]);  // recursive call for nested arrays
-    }
-  }
-};
-const obj = {name:"Akash",
-  callName: function(){
-    console.log("aaaa",this.name)
-  }
-}
-obj.callName()
 
-recfun(arr);
+// const recfun = (arr: NestedArray): void => {
+//   for (let i = 0; i < arr.length; i++) {
+//     if (typeof arr[i] === "number") {
+//       res.push(arr[i]);
+//     } else {
+//       recfun(arr[i]);  // recursive call for nested arrays
+//     }
+//   }
+// };
+// const obj = {name:"Akash",
+//   callName: function(){
+//     console.log("aaaa",this.name)
+//   }
+// }
+// obj.callName()
+
+// recfun(arr);
 
   return (
     <>
