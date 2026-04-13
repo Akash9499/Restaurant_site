@@ -5,7 +5,15 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function MenuPage() {
-  const [menu, setMenu] = useState<any[]>([]);
+type MenuItem = {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  image?: string;
+};
+
+const [menu, setMenu] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

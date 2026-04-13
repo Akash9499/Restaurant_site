@@ -1,8 +1,12 @@
 "use client";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+
+type ErrorResponse = {
+  message?: string;
+};
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
@@ -36,9 +40,10 @@ export default function SignupPage() {
         router.push("./auth/login")
 
       }
-    } catch (error: any) {
+    } catch (error) {
+         const err = error as AxiosError<ErrorResponse>;
       setMessage(
-        error.response?.data?.message || "❌ Signup failed. Please try again."
+        err.response?.data?.message || "❌ Login failed. Please try again."
       );
     }
   };

@@ -84,26 +84,44 @@
 "use client";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
+// ✅ Types
+type LoginResponse = {
+  responseData: string;
+};
+
+type ErrorResponse = {
+  message?: string;
+};
+
+type GoogleUser = {
+  name: string;
+  email: string;
+  picture: string;
+};
+
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
   const router = useRouter();
 
-  // ✅ Normal Login (your existing)
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ✅ Normal Login
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("https://localhost:3000/auth/login", {
-        email,
-        password,
-      });
+      const response = await axios.post<LoginResponse>(
+        "https://localhost:3000/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
       if (response.status === 200) {
         const token = response.data.responseData;
@@ -112,20 +130,27 @@ export default function LoginPage() {
         setMessage("✅ Login successful!");
         router.push("/menu");
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as AxiosError<ErrorResponse>;
+
       setMessage(
-        error.response?.data?.message || "❌ Login failed. Please try again."
+        err.response?.data?.message || "❌ Login failed. Please try again."
       );
     }
   };
 
-  // ✅ Google Login (Frontend Only)
-  const handleGoogleSuccess = (credentialResponse: any) => {
+  // ✅ Google Login
+  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
     try {
-      const decoded: any = jwtDecode(credentialResponse.credential);
+      if (!credentialResponse.credential) {
+        throw new Error("No credential received");
+      }
 
-      // 🎯 Extract user info
-      const user = {
+      const decoded = jwtDecode<GoogleUser>(
+        credentialResponse.credential
+      );
+
+      const user: GoogleUser = {
         name: decoded.name,
         email: decoded.email,
         picture: decoded.picture,
@@ -133,9 +158,8 @@ export default function LoginPage() {
 
       console.log("Google User:", user);
 
-      // ✅ Store in localStorage
       localStorage.setItem("googleUser", JSON.stringify(user));
-      localStorage.setItem("authToken", credentialResponse.credential); // optional
+      localStorage.setItem("authToken", credentialResponse.credential);
 
       setMessage("✅ Google login successful!");
       router.push("/menu");
@@ -167,7 +191,9 @@ export default function LoginPage() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               className="w-full border border-gray-300 p-3 rounded-lg"
               required
             />
@@ -175,7 +201,9 @@ export default function LoginPage() {
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
               className="w-full border border-gray-300 p-3 rounded-lg"
               required
             />
@@ -188,7 +216,9 @@ export default function LoginPage() {
           </form>
 
           {message && (
-            <p className="mt-4 text-center text-sm text-red-500">{message}</p>
+            <p className="mt-4 text-center text-sm text-red-500">
+              {message}
+            </p>
           )}
         </div>
       </main>
