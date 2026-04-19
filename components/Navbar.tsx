@@ -23,7 +23,7 @@ export default function Navbar() {
   return (
     <nav className="bg-amber-900 text-white px-6 py-4 flex justify-between items-center">
       {/* Brand / Logo */}
-      <h1 className="text-2xl font-bold">☕ My Café</h1>
+      <h1 className="text-2xl font-bold">☕ Cakery TV</h1>
 
       {/* Links */}
       <div className="space-x-6">

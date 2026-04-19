@@ -11,7 +11,7 @@ export default function HomePage() {
         {/* 🌟 Hero Section */}
         <section className="flex flex-col items-center justify-center text-center py-20 px-6">
           <h1 className="text-5xl font-extrabold text-amber-900 mb-4">
-            Welcome to My Bakery 🥐
+            Welcome to My Bakery 🥐 Cakery TV
           </h1>
           <p className="text-lg text-gray-700 max-w-2xl">
             Freshly baked breads, pastries, and desserts made with love every

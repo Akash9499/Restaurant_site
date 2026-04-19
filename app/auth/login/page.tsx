@@ -150,6 +150,9 @@ export default function LoginPage() {
         credentialResponse.credential
       );
 
+      console.log("Decoded JWT:", decoded);
+      console.log("Cred resp JWT:", credentialResponse);
+
       const user: GoogleUser = {
         name: decoded.name,
         email: decoded.email,
