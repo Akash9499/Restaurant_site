@@ -64,6 +64,11 @@ export default function MenuPage() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -73,6 +78,9 @@ export default function MenuPage() {
       return;
     }
     setLoading(false);
+
+    const mobileRegex = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    setIsMobileDevice(mobileRegex.test(navigator.userAgent));
   }, [router]);
 
   const addToCart = (item: MenuItem) => {
@@ -109,14 +117,70 @@ export default function MenuPage() {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const placeOrder = () => {
+  const openOrderModal = () => {
     if (cart.length === 0) {
       alert("Please add items to your cart first!");
       return;
     }
-    // Here you would typically send the order to your backend
-    alert(`Order placed successfully! Total: ₹${getTotalPrice()}`);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const getOrderSummary = () => {
+    return cart
+      .map(item => `${item.name} x${item.quantity} (₹${item.price * item.quantity})`)
+      .join("\n");
+  };
+
+  const getMessageBody = () => {
+    return `Order from ${customerName}\nPhone: ${customerPhone}\nAddress: ${customerAddress}\n\nItems:\n${getOrderSummary()}\n\nTotal: ₹${getTotalPrice()}\n\nYour order details are sending to the shop. They will revert you on order confirmation.`;
+  };
+
+  const openWhatsappOrSms = (message: string) => {
+    const whatsappUrl = `whatsapp://send?phone=+919260928528&text=${encodeURIComponent(message)}`;
+    const smsUrl = `sms:9260928528?body=${encodeURIComponent(message)}`;
+
+    const fallbackTimeout = window.setTimeout(() => {
+      window.location.href = smsUrl;
+    }, 1500);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        window.clearTimeout(fallbackTimeout);
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.location.href = whatsappUrl;
+
+    setTimeout(() => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, 2000);
+  };
+
+  const submitOrder = () => {
+    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
+      alert("Please fill in your name, contact number, and address.");
+      return;
+    }
+
+    const message = getMessageBody();
+
+    if (isMobileDevice) {
+      openWhatsappOrSms(message);
+    } else {
+      const mailtoUrl = `mailto:smrtakashkp@gmail.com?subject=${encodeURIComponent("New Order from Cakery TV")}&body=${encodeURIComponent(message)}`;
+      window.location.href = mailtoUrl;
+    }
+
+    setIsModalOpen(false);
     setCart([]);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerAddress("");
   };
 
   if (loading) {
@@ -136,7 +200,7 @@ export default function MenuPage() {
               <h2 className="text-xl font-semibold mb-4">🛒 Your Cart</h2>
               <div className="space-y-2">
                 {cart.map(item => (
-                  <div key={item.id} className="flex justify-between items-center">
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-2">
                     <span>{item.name} x{item.quantity}</span>
                     <div className="flex items-center gap-2">
                       <span>₹{item.price * item.quantity}</span>
@@ -149,12 +213,12 @@ export default function MenuPage() {
                     </div>
                   </div>
                 ))}
-                <div className="border-t pt-2 mt-4">
-                  <div className="flex justify-between items-center font-bold">
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 font-bold">
                     <span>Total: ₹{getTotalPrice()}</span>
                     <button
-                      onClick={placeOrder}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                      onClick={openOrderModal}
+                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full sm:w-auto"
                     >
                       Place Order
                     </button>
@@ -178,11 +242,11 @@ export default function MenuPage() {
                 />
                 <h2 className="text-xl font-semibold text-amber-900 mb-2">{item.name}</h2>
                 <p className="text-gray-600 mb-4">{item.description}</p>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col gap-3 items-center">
                   <span className="text-2xl font-bold text-amber-800">₹{item.price}</span>
                   <button
                     onClick={() => addToCart(item)}
-                    className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition duration-200"
+                    className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition duration-200 w-full"
                   >
                     Add to Cart
                   </button>
@@ -192,6 +256,82 @@ export default function MenuPage() {
           </div>
         </div>
       </main>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-amber-900 text-white px-6 py-5">
+              <h2 className="text-2xl font-semibold">Confirm Your Order</h2>
+              <p className="mt-2 text-sm text-amber-100">
+                Enter your details and send the order to the shop. They will revert you on confirmation.
+              </p>
+            </div>
+            <div className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={e => setCustomerName(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-amber-500 focus:outline-none"
+                  placeholder="Your full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-amber-500 focus:outline-none"
+                  placeholder="9260928528"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Address</label>
+                <textarea
+                  value={customerAddress}
+                  onChange={e => setCustomerAddress(e.target.value)}
+                  className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 focus:border-amber-500 focus:outline-none"
+                  placeholder="Your delivery address"
+                  rows={4}
+                />
+              </div>
+              <div className="rounded-2xl bg-amber-50 p-4 border border-amber-100">
+                <h3 className="text-lg font-semibold mb-2">Order details sending to shop</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  {isMobileDevice
+                    ? "This device will try WhatsApp first and fall back to SMS if WhatsApp is unavailable."
+                    : "This device will send the order via email to smrtakashkp@gmail.com."}
+                </p>
+                <div className="space-y-2 text-sm text-gray-700">
+                  {cart.map(item => (
+                    <p key={item.id}>
+                      {item.name} x{item.quantity} — ₹{item.price * item.quantity}
+                    </p>
+                  ))}
+                </div>
+                <div className="pt-3 text-sm font-semibold text-amber-900">Total: ₹{getTotalPrice()}</div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={submitOrder}
+                  className="w-full bg-amber-600 text-white px-5 py-3 rounded-xl hover:bg-amber-700 transition"
+                >
+                  Send Order
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="w-full border border-gray-300 text-gray-700 px-5 py-3 rounded-xl hover:bg-gray-100 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

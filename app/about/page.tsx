@@ -28,8 +28,8 @@ export default function AboutPage() {
     <>
       <Navbar />
       <main className="flex flex-col items-center justify-center min-h-screen bg-amber-50 p-6">
-        <h1 className="text-4xl font-bold mb-4">About Our Café ☕</h1>
-        <p className="text-lg text-gray-700 max-w-2xl text-center">
+        <h1 className="text-2xl md:text-4xl font-bold mb-4">About Our Café ☕</h1>
+        <p className="text-base md:text-lg text-gray-700 max-w-2xl text-center">
           Welcome to My Café! We serve freshly brewed coffee, homemade pastries, 
           and a warm smile every day. Our mission is to create a cozy space 
           where friends and family can connect over great coffee.
